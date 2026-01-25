@@ -11,7 +11,7 @@
 4. 复制你的MovieDb.db到新版本文件夹
 
 # 交流群
-https://t.me/+9JBjtAz_EqhmMmRh
+https://t.me/javmgr/20
 
 # 安装说明
 影片需要预先通过Movie_Data_Capture等刮削器取得元数据和影片封面图片。如果已有元数据，请直接从第二步开始阅读。
