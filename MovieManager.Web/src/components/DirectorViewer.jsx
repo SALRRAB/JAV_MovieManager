@@ -1,18 +1,21 @@
 import "./DirectorViewer.css"
+import "./GridViewer.css"
 import { useState, forwardRef, useImperativeHandle, useRef } from "react";
 import { Pagination, Button, Spin, Modal, Descriptions, Input } from 'antd';
 import { getMoivesByFilter } from "../services/DataService";
 import MovieViewer from "./MovieViewer";
+import { NAME_TAG_CELL_WIDTH, NAME_TAG_CELL_HEIGHT, MIN_GRID_ITEMS_PER_PAGE } from "../Constant";
+import { useGridItemsPerPage } from "../hooks/useGridItemsPerPage";
+import { useGridPagination } from "../hooks/useGridPagination";
 
 const { Search } = Input;
 
 const directorViewer = forwardRef((props, ref) => {
-    const numEachPage = 63;
-
-    const [minValue, setMinValue] = useState(0);
-    const [maxValue, setMaxValue] = useState(numEachPage);
+    const listRef = useRef(null);
+    const numEachPage = useGridItemsPerPage(listRef, NAME_TAG_CELL_WIDTH, NAME_TAG_CELL_HEIGHT, MIN_GRID_ITEMS_PER_PAGE);
     const [directors, setDirectors] = useState([]);
     const [originalDirectors, setOriginalDirectors] = useState([]);
+    const { currentPage, minValue, maxValue, handlePageChange } = useGridPagination(directors, numEachPage);
     const [director, setDirector] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [visible, setVisible] = useState(false);
@@ -29,8 +32,6 @@ const directorViewer = forwardRef((props, ref) => {
     }));
 
     function init(directors) {
-        setMinValue(0);
-        setMaxValue(numEachPage);
         setDirectors(directors);
         if (originalDirectors.length === 0) {
             setOriginalDirectors(directors);
@@ -38,57 +39,47 @@ const directorViewer = forwardRef((props, ref) => {
         setIsLoading(false);
     }
 
-    function handleChange(value) {
-        setMinValue((value - 1) * numEachPage);
-        setMaxValue(value * numEachPage);
-    };
-
     function showDirectorDetails(directorIndex) {
         setDirector(directors[directorIndex]);
         setVisible(true);
-        // movieViewer?.current.setIsLoading();
         getMoivesByFilter(3, [directors[directorIndex]], false).then(resp => {
-            movieViewer?.current.initializeMovies(resp, 5, directors[directorIndex]);
+            movieViewer?.current.initializeMovies(resp, directors[directorIndex]);
         });
     }
 
     function onSearch(value) {
         setIsLoading(true);
         if (value && value.trim()) {
-            // Filter directors by search value
-            const filteredDirectors = originalDirectors.filter(director => 
+            const filteredDirectors = originalDirectors.filter(director =>
                 director && director.toLowerCase().includes(value.toLowerCase())
             );
             init(filteredDirectors);
         } else {
-            // If search is empty, show all directors
             init(originalDirectors);
         }
     }
 
-
-
     return (
-        <div className="director-viewer">
-            {isLoading ? <div><Spin size="large" /></div> :
+        <div className="grid-viewer director-viewer">
+            <div className="grid-viewer-toolbar">
                 <Pagination
                     simple
-                    defaultCurrent={1}
-                    defaultPageSize={numEachPage} //default size of page
-                    onChange={handleChange}
+                    current={currentPage}
+                    pageSize={numEachPage}
+                    onChange={handlePageChange}
                     total={directors?.length}
                     className="header-left"
-                />}
-            <Search placeholder="导演名" onSearch={onSearch} className="header-right director-search-bar" loading={isLoading} />
-            {isLoading ? <div><Spin size="large" /></div> :
-                <div>
-                    <div className="director-list">
-                        {directors?.slice(minValue, maxValue).map((director, i) =>
-                            <Button key={"director-" + i + minValue} className="director-button" onClick={() => showDirectorDetails(i + minValue)}>
-                                <span className="director-span">{director || "佚名导演"}</span>
-                            </Button>)}
-                    </div>
-                </div>}
+                    disabled={isLoading}
+                />
+                <Search placeholder="导演名" onSearch={onSearch} className="header-right director-search-bar" loading={isLoading} />
+            </div>
+            <div className="grid-viewer-list director-list" ref={listRef}>
+                {isLoading ? <div className="grid-viewer-loading"><Spin size="large" /></div> :
+                    directors?.slice(minValue, maxValue).map((director, i) =>
+                        <Button key={"director-" + i + minValue} className="director-button" onClick={() => showDirectorDetails(i + minValue)}>
+                            <span className="director-span">{director || "佚名导演"}</span>
+                        </Button>)}
+            </div>
             <Modal
                 title={[<Button key="director-like-btn"
                     shape="circle"></Button>]}

@@ -4,7 +4,6 @@ import { Pagination, Button, Spin, Modal, Descriptions, Input } from 'antd';
 import { HeartFilled, HeartOutlined } from '@ant-design/icons';
 import { getMoivesByFilter, getGenreByName, likeGenre } from "../services/DataService";
 import MovieViewer from "./MovieViewer";
-import { MOVIE_CARD_EACH_PAGE_SMALL_SCREEN } from "../Constant";
 
 const { Search } = Input;
 
@@ -50,7 +49,7 @@ const GenreViewer = forwardRef((props, ref) => {
             movieViewer?.current.setIsLoading();
             setLikeFlag(resp[0].liked);
             getMoivesByFilter(1, [genres[genreIndex]], false).then(resp => {
-                movieViewer?.current.initializeMovies(resp, MOVIE_CARD_EACH_PAGE_SMALL_SCREEN, genres[genreIndex]);
+                movieViewer?.current.initializeMovies(resp, genres[genreIndex]);
             });
         }).catch((error) => {
             console.log(error);

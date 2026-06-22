@@ -57,7 +57,7 @@ namespace MovieManager.Endpoint
                     catch(Exception ex)
                     {
                         Log.Error($"An error occurs when starting web app. {ex.ToString()} ");
-                        MessageBox.Show($"程序初始化失败，请联系开发者。错误信息：{ex.ToString()}");
+                        MessageBox.Show($"An error occurs when starting web app. {ex}");
                         Application.Current.Shutdown();
                     }
                 });

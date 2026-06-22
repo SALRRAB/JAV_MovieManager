@@ -8,10 +8,42 @@
 
 .poster-card {
     margin: 5px;
-    display: inline-block;
-    width: 190px;
-    height: 400px;
+    display: inline-flex;
+    flex-direction: column;
+    width: var(--movie-card-width, 190px);
+    height: var(--movie-card-height, 300px);
     vertical-align: top;
+    overflow: hidden;
+}
+
+.poster-card .ant-card-cover {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.poster-card .ant-card-cover img,
+.poster-card .image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.poster-card .ant-card-body {
+    flex-shrink: 0;
+    padding: 8px 12px;
+}
+
+.poster-card .ant-card-meta-title {
+    font-size: clamp(11px, 1.1vw, 14px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.poster-card .ant-card-meta-description {
+    font-size: clamp(10px, 1vw, 12px);
 }
 
 .fanart-card {
@@ -39,19 +71,6 @@
 
 .movie-list {
     margin-top: 10px;
-}
-
-.header-left {
-    display: inline-block;
-    vertical-align: middle;
-    margin-top: 10px;
-}
-
-.header-right {
-    margin-right: 48px;
-    margin-top: 3px;
-    display: inline-block;
-    float: right;
 }
 
 .ant-card-meta-description {

@@ -1,21 +1,24 @@
 import "./ActorViewer.css"
+import "./GridViewer.css"
 import { useState, forwardRef, useImperativeHandle, useRef, useEffect } from "react";
 import { Pagination, Button, Spin, Modal, Descriptions, Input, message, Card } from 'antd';
 import { HeartFilled, HeartOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { getActorByName, likeActor, getMoivesByFilter, createPotPlayerPlayListByActors, getActorByNames, getImage } from "../services/DataService";
 import MovieViewer from "./MovieViewer";
-import { ACTOR_CARD_EACH_PAG as ACTOR_CARD_EACH_PAGE } from "../Constant";
+import { ACTOR_CARD_CELL_WIDTH, ACTOR_CARD_CELL_HEIGHT, MIN_GRID_ITEMS_PER_PAGE } from "../Constant";
+import { useGridItemsPerPage } from "../hooks/useGridItemsPerPage";
+import { useGridPagination } from "../hooks/useGridPagination";
 
 const { Search } = Input;
 const { Meta } = Card;
 
 const ActorViewer = forwardRef((props, ref) => {
-    const [minValue, setMinValue] = useState(0);
-    const [maxValue, setMaxValue] = useState(ACTOR_CARD_EACH_PAGE);
-    const [currentPage, setCurrentPage] = useState(-1);
+    const listRef = useRef(null);
+    const numEachPage = useGridItemsPerPage(listRef, ACTOR_CARD_CELL_WIDTH, ACTOR_CARD_CELL_HEIGHT, MIN_GRID_ITEMS_PER_PAGE);
     const [actorNames, setActorNames] = useState([]);
+    const { currentPage, minValue, maxValue, handlePageChange } = useGridPagination(actorNames, numEachPage);
     const [actor, setActor] = useState(null);
-    const [currentPageActorCardDetails, setCurrentPageActorCardDetails] = useState([])
+    const [currentPageActorCardDetails, setCurrentPageActorCardDetails] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [visible, setVisible] = useState(false);
     const [isLikeLoading, setIsLikeLoading] = useState(false);
@@ -46,6 +49,9 @@ const ActorViewer = forwardRef((props, ref) => {
                 } finally {
                     setIsLoading(false);
                 }
+            } else {
+                setCurrentPageActorCardDetails([]);
+                setIsLoading(false);
             }
         };
 
@@ -53,9 +59,6 @@ const ActorViewer = forwardRef((props, ref) => {
     }, [actorNames, minValue, maxValue]);
 
     function resetViewer() {
-        setCurrentPage(-1);
-        setMinValue(0);
-        setMaxValue(ACTOR_CARD_EACH_PAGE);
         setActorNames([]);
         setActor(null);
         setCurrentPageActorCardDetails([]);
@@ -65,16 +68,8 @@ const ActorViewer = forwardRef((props, ref) => {
     }
 
     function init(actorNames) {
-        setMinValue(0);
         setActorNames(actorNames);
-        setCurrentPage(1);
     }
-
-    function handleChange(value) {
-        setMinValue((value - 1) * ACTOR_CARD_EACH_PAGE);
-        setMaxValue(value * ACTOR_CARD_EACH_PAGE);
-        setCurrentPage(value);
-    };
 
     function showActorDetails(actorIndex) {
         getActorByName(currentPageActorCardDetails[actorIndex].name).then(resp => {
@@ -83,7 +78,7 @@ const ActorViewer = forwardRef((props, ref) => {
             movieViewer?.current.setIsLoading();
             setLikeFlag(resp[0].liked);
             getMoivesByFilter(0, [resp[0].name], false).then(resp => {
-                movieViewer?.current.initializeMovies(resp, 5, currentPageActorCardDetails[actorIndex].name);
+                movieViewer?.current.initializeMovies(resp, currentPageActorCardDetails[actorIndex].name);
             });
         }).catch((error) => {
             console.log(error);
@@ -95,7 +90,7 @@ const ActorViewer = forwardRef((props, ref) => {
         try {
             const resp = await getActorByName(value);
             const actors = resp ? resp.map(x => x.name) : [];
-            resetViewer()
+            resetViewer();
             await sleep(1000);
             init(actors);
         } catch (error) {
@@ -127,42 +122,42 @@ const ActorViewer = forwardRef((props, ref) => {
     }
 
     return (
-        <div className="actor-viewer">
-            {isLoading ? <div><Spin size="large" /></div> :
+        <div className="grid-viewer actor-viewer">
+            <div className="grid-viewer-toolbar">
                 <Pagination
                     simple
                     current={currentPage}
-                    defaultPageSize={ACTOR_CARD_EACH_PAGE} //default size of page
-                    onChange={handleChange}
+                    pageSize={numEachPage}
+                    onChange={handlePageChange}
                     total={actorNames?.length}
                     className="header-left"
-                />}
-            <div className="header-right">
-                <Search placeholder="演员名" onSearch={onSearch} className="header-element-right actor-search-bar" loading={isLoading} />
-                <Button
-                    type="primary"
-                    icon={<PlusCircleOutlined />}
-                    disabled={actorNames?.length === 0 || isLoading ? true : false}
-                    onClick={createPotPlayList}
-                    className="header-element-right">
-                    加入PotPlayer列表
-                </Button>
+                    disabled={isLoading}
+                />
+                <div className="header-right">
+                    <Search placeholder="演员名" onSearch={onSearch} className="header-element-right actor-search-bar" loading={isLoading} />
+                    <Button
+                        type="primary"
+                        icon={<PlusCircleOutlined />}
+                        disabled={actorNames?.length === 0 || isLoading ? true : false}
+                        onClick={createPotPlayList}
+                        className="header-element-right">
+                        加入PotPlayer列表
+                    </Button>
+                </div>
             </div>
-            {isLoading ? <div><Spin size="large" /></div> :
-                <div>
-                    <div className="actor-list">
-                        {currentPageActorCardDetails?.map((actor, i) =>
-                            <Card
-                                hoverable
-                                key={"actor-" + i}
-                                className="actor-poster-card"
-                                onClick={() => showActorDetails(i)}
-                                cover={<ImageLoader type={10} id={actor?.name} />}
-                            >
-                                <Meta title={actor?.name} />
-                            </Card>)}
-                    </div>
-                </div>}
+            <div className="grid-viewer-list actor-list" ref={listRef}>
+                {isLoading ? <div className="grid-viewer-loading"><Spin size="large" /></div> :
+                    currentPageActorCardDetails?.map((actor, i) =>
+                        <Card
+                            hoverable
+                            key={"actor-" + i + minValue}
+                            className="actor-poster-card"
+                            onClick={() => showActorDetails(i)}
+                            cover={<ImageLoader type={10} id={actor?.name} />}
+                        >
+                            <Meta title={actor?.name} />
+                        </Card>)}
+            </div>
             <Modal
                 title={[<Button key="actor-like-btn"
                     shape="circle"
@@ -178,7 +173,7 @@ const ActorViewer = forwardRef((props, ref) => {
             >
                 <div className="left-container">
                     <Card
-                        hoverable                       
+                        hoverable
                         cover={<ImageLoader type={11} id={actor?.name} />}
                         className="actor-detail-card"
                     ></Card>

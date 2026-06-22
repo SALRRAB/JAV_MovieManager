@@ -18,11 +18,13 @@ namespace MovieManager.BusinessLogic
     public class ActorService
     {
         private UserSettingsService _config;
+        private ActorImageIndexService _actorImageIndex;
 
-        public ActorService(UserSettingsService config)
+        public ActorService(UserSettingsService config, ActorImageIndexService actorImageIndex)
         {
             CultureInfo PronoCi = new CultureInfo(2052);
             _config = config;
+            _actorImageIndex = actorImageIndex;
         }
 
         #region Get Full Actor Info
@@ -225,34 +227,15 @@ namespace MovieManager.BusinessLogic
 
         public string GetImagePath(ImageRequest imageRequest)
         {
-            var result = "";
-            var figureSmallPath = "";
-            var figureLargePath = "";
             try
             {
-                if (!string.IsNullOrEmpty(_config.GetUserSettings().ActorFiguresDMMDirectory))
+                // ImageType 10 = actor thumbnail, 11 = actor full-size portrait.
+                switch (imageRequest.ImageType)
                 {
-                    figureSmallPath = Directory.EnumerateFiles(_config.GetUserSettings().ActorFiguresDMMDirectory, $"AI-Fix-{imageRequest.Id}.jpg", SearchOption.AllDirectories).FirstOrDefault();
-                }
-                if (!string.IsNullOrEmpty(_config.GetUserSettings().ActorFiguresAllDirectory))
-                {
-                    if (string.IsNullOrEmpty(figureSmallPath))
-                    {
-                        figureSmallPath = Directory.EnumerateFiles(_config.GetUserSettings().ActorFiguresAllDirectory, $"{imageRequest.Id}.jpg", SearchOption.AllDirectories).FirstOrDefault();
-                    }
-                    figureLargePath = Directory.EnumerateFiles(_config.GetUserSettings().ActorFiguresAllDirectory, $"{imageRequest.Id}.jpg", SearchOption.AllDirectories).OrderByDescending(f => new FileInfo(f).Length).FirstOrDefault();
-                }
-                using (var context = new DatabaseContext())
-                {
-                    switch (imageRequest.ImageType)
-                    {
-                        case 10:
-                            result = figureSmallPath;
-                            break;
-                        case 11:
-                            result = figureLargePath;
-                            break;
-                    }
+                    case 10:
+                        return _actorImageIndex.GetSmallPath(imageRequest.Id);
+                    case 11:
+                        return _actorImageIndex.GetLargePath(imageRequest.Id);
                 }
             }
             catch (Exception ex)
@@ -260,7 +243,7 @@ namespace MovieManager.BusinessLogic
                 Log.Error($"An error occurs when getting image path. \n\r");
                 Log.Error(ex.ToString());
             }
-            return result;
+            return "";
         }
 
         private List<ActorViewModel> BuildActorViewModels(List<Actor> actors)

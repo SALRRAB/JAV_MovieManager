@@ -16,10 +16,12 @@ namespace MovieManager.Endpoint.Controllers
         private string badRequestMessage = "Value cannot be null!";
         private string notFoundMessage = "No User Settings found!";
         private UserSettingsService _config;
+        private ActorImageIndexService _actorImageIndex;
 
-        public UserSettingsController(UserSettingsService config)
+        public UserSettingsController(UserSettingsService config, ActorImageIndexService actorImageIndex)
         {
             _config = config;
+            _actorImageIndex = actorImageIndex;
         }
 
         [HttpGet]
@@ -43,6 +45,8 @@ namespace MovieManager.Endpoint.Controllers
                 return BadRequest(badRequestMessage);
             }
             _config.SetUserSettings(userSettings);
+            // Actor figure directories may have changed; rebuild the image index on next lookup.
+            _actorImageIndex.Invalidate();
             return Ok(userSettings);
         }
     }

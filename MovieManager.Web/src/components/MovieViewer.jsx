@@ -1,18 +1,20 @@
 import "./MovieViewer.css"
-import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
+import "./GridViewer.css"
+import { useState, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
 import { Card, Pagination, Button, message, Menu, Dropdown, Modal, Spin, Descriptions, Image, Input, Space } from 'antd';
 import { PlusCircleOutlined, ArrowDownOutlined, UserOutlined, GroupOutlined, TagOutlined, HeartFilled, HeartOutlined, CaretRightOutlined } from '@ant-design/icons';
 import { createPotPlayerPlayList, addToDefaultPotPlayerPlayList, getMoivesByFilter, getMovieDetails, getMoviesWildcardSearch, getMoviesQuerySearch, likeMovie, getMostRecentMovies, getImage } from "../services/DataService";
-import { MOVIE_CARD_EACH_PAGE_LARGE_SCREEN, MOVIE_CARD_EACH_PAGE_SMALL_SCREEN } from "../Constant.js"
+import { useResponsiveMovieGrid } from "../hooks/useResponsiveMovieGrid";
+import { useGridPagination } from "../hooks/useGridPagination";
 const { Meta } = Card;
 const { Search } = Input;
 
 const MovieViewer = forwardRef((props, ref) => {
     const { searchString2, searchType } = props;
-    const [numEachPage, setNumEachPage] = useState(MOVIE_CARD_EACH_PAGE_LARGE_SCREEN);
-    const [minValue, setMinValue] = useState(0);
-    const [maxValue, setMaxValue] = useState(numEachPage);
+    const listRef = useRef(null);
+    const { itemsPerPage: numEachPage, cardWidth, cardHeight } = useResponsiveMovieGrid(listRef);
     const [movies, setMovies] = useState([]);
+    const { currentPage, minValue, maxValue, handlePageChange } = useGridPagination(movies, numEachPage);
     const [movie, setMovie] = useState(null);
     const [movieCardVisible, setMovieCardVisible] = useState(false);
     const [querySearchVisible, setQuerySearchVisible] = useState(false);
@@ -25,18 +27,15 @@ const MovieViewer = forwardRef((props, ref) => {
     const { TextArea } = Input;
 
     useImperativeHandle(ref, () => ({
-        initializeMovies(movies, numEachPage = MOVIE_CARD_EACH_PAGE_LARGE_SCREEN, pageRoot = "") {
-            init(movies, numEachPage, pageRoot);
+        initializeMovies(movies, pageRoot = "") {
+            init(movies, pageRoot);
         },
         setIsLoading() {
             setIsLoading(true);
         }
     }));
 
-    function init(movies, numEachPage, pageRoot) {
-        setNumEachPage(numEachPage);
-        setMinValue(0);
-        setMaxValue(numEachPage);
+    function init(movies, pageRoot) {
         setMovies(movies);
         setIsLoading(false);
         setQuerySearchBtnVisible(searchType === "Title" ? true : false);
@@ -47,9 +46,8 @@ const MovieViewer = forwardRef((props, ref) => {
         setPageRoot(pageRoot);
     }
 
-    function handleChange(value) {
-        setMinValue((value - 1) * numEachPage);
-        setMaxValue(value * numEachPage);
+    function handleChange(page) {
+        handlePageChange(page);
     };
 
     function createPotPlayList() {
@@ -104,7 +102,7 @@ const MovieViewer = forwardRef((props, ref) => {
         setMovieCardVisible(false);
         setIsLoading(true);
         getMoivesByFilter(filterType, filter).then(resp => {
-            init(resp, MOVIE_CARD_EACH_PAGE_LARGE_SCREEN, pageRoot);
+            init(resp, pageRoot);
         });
     }
 
@@ -134,7 +132,7 @@ const MovieViewer = forwardRef((props, ref) => {
         }
 
         getMoviesWildcardSearch(value, _searchString2, _searchType).then(resp => {
-            init(resp, _searchType === "Title" ? MOVIE_CARD_EACH_PAGE_LARGE_SCREEN : MOVIE_CARD_EACH_PAGE_SMALL_SCREEN, `${value}_${searchString2}`);
+            init(resp, `${value}_${searchString2}`);
         }).catch(error => console.log(error));
     }
 
@@ -142,7 +140,7 @@ const MovieViewer = forwardRef((props, ref) => {
         setQuerySearchVisible(false)
         setIsLoading(true);
         getMoviesQuerySearch(querySearchValue).then(resp => {
-            init(resp, MOVIE_CARD_EACH_PAGE_LARGE_SCREEN, pageRoot);
+            init(resp, pageRoot);
         }).catch(error => console.log(error));
     }
 
@@ -182,54 +180,61 @@ const MovieViewer = forwardRef((props, ref) => {
     </Space>])
 
     return (
-        <div className="movie-viewer">
-            {isLoading ? "" :
-                <Pagination
-                    simple
-                    defaultCurrent={1}
-                    defaultPageSize={numEachPage} //default size of page
-                    onChange={handleChange}
-                    total={movies?.length}
-                    className="header-left"
-                    disabled={isLoading}
-                />}
-            <div className="header-right">
-                <Search placeholder="影片名" onSearch={onSearch} className="header-element-right movie-search-bar" loading={isLoading} />
-                <Button
-                    type="primary"
-                    onClick={() => setQuerySearchVisible(true)}
-                    className="header-element-right"
-                    hidden={!querySearchBtnVisible}
-                >
-                    打开自定义搜索
-                </Button>
-                <Button
-                    type="primary"
-                    icon={<PlusCircleOutlined />}
-                    disabled={movies?.length === 0 || isLoading ? true : false}
-                    onClick={createPotPlayList}
-                    className="header-element-right">
-                    加入PotPlayer列表
-                </Button>
-                <Dropdown overlay={menu} arrow className="header-element-right" disabled={isLoading}>
-                    <Button icon={<ArrowDownOutlined />}>排序</Button>
-                </Dropdown>
-            </div>
-            {isLoading ? <div><Spin size="large" /></div> : (
-                <div className="movie-list">
-                    {movies?.slice(minValue, maxValue).map((movie, i) => (
-                        <Card
-                            className="poster-card"
-                            key={"movie-" + i + minValue}
-                            hoverable
-                            cover={<ImageLoader type={0} id={movie.imdbId} />}
-                            onClick={() => showMovieDetails(i + minValue)}
-                        >
-                            <Meta title={movie.imdbId} description={movie.title} />
-                        </Card>
-                    ))}
+        <div className="grid-viewer movie-viewer">
+            <div className="grid-viewer-toolbar">
+                {isLoading ? "" :
+                    <Pagination
+                        simple
+                        current={currentPage}
+                        pageSize={numEachPage}
+                        onChange={handleChange}
+                        total={movies?.length}
+                        className="header-left"
+                        disabled={isLoading}
+                    />}
+                <div className="header-right">
+                    <Search placeholder="影片名" onSearch={onSearch} className="header-element-right movie-search-bar" loading={isLoading} />
+                    <Button
+                        type="primary"
+                        onClick={() => setQuerySearchVisible(true)}
+                        className="header-element-right"
+                        hidden={!querySearchBtnVisible}
+                    >
+                        打开自定义搜索
+                    </Button>
+                    <Button
+                        type="primary"
+                        icon={<PlusCircleOutlined />}
+                        disabled={movies?.length === 0 || isLoading ? true : false}
+                        onClick={createPotPlayList}
+                        className="header-element-right">
+                        加入PotPlayer列表
+                    </Button>
+                    <Dropdown overlay={menu} arrow className="header-element-right" disabled={isLoading}>
+                        <Button icon={<ArrowDownOutlined />}>排序</Button>
+                    </Dropdown>
                 </div>
-            )}
+            </div>
+            <div
+                className="grid-viewer-list movie-list"
+                ref={listRef}
+                style={{
+                    '--movie-card-width': `${cardWidth}px`,
+                    '--movie-card-height': `${cardHeight}px`
+                }}
+            >
+                {isLoading ? <div className="grid-viewer-loading"><Spin size="large" /></div> : movies?.slice(minValue, maxValue).map((movie, i) => (
+                    <Card
+                        className="poster-card"
+                        key={"movie-" + i + minValue}
+                        hoverable
+                        cover={<ImageLoader type={0} id={movie.imdbId} />}
+                        onClick={() => showMovieDetails(i + minValue)}
+                    >
+                        <Meta title={movie.imdbId} description={movie.title} />
+                    </Card>
+                ))}
+            </div>
             <Modal
                 title={movieDetailsTitle}
                 centered
@@ -277,6 +282,7 @@ const MovieViewer = forwardRef((props, ref) => {
     )
 });
 
+// Loads poster/fanart via the image API and renders a blob URL for the card cover.
 const ImageLoader = ({ type, id }) => {
     const [imageSrc, setImageSrc] = useState(null);
 

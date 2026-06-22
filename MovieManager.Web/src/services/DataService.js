@@ -1,5 +1,8 @@
+// Must match EndpointHost in appsettings.json.
+const API_BASE_URL = "http://localhost:8700";
+
 export function getMovies() {
-    return fetch("http://localhost:5100/movies", {
+    return fetch(`${API_BASE_URL}/movies`, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -15,7 +18,7 @@ export function getMovies() {
 };
 
 export function getMostRecentMovies() {
-    return fetch("http://localhost:5100/movies/recent", {
+    return fetch(`${API_BASE_URL}/movies/recent`, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -31,7 +34,7 @@ export function getMostRecentMovies() {
 };
 
 export function getMovieYears() {
-    return fetch("http://localhost:5100/movies/years", {
+    return fetch(`${API_BASE_URL}/movies/years`, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -47,7 +50,7 @@ export function getMovieYears() {
 };
 
 export function getMoivesByFilter(filterType, filters, isAndOperator) {
-    return fetch("http://localhost:5100/movies/filters", {
+    return fetch(`${API_BASE_URL}/movies/filters`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({
@@ -71,7 +74,7 @@ export function getMoivesByFilter(filterType, filters, isAndOperator) {
 }
 
 export function getMoviesWildcardSearch(searchString, searchString2, searchType) {
-    return fetch("http://localhost:5100/movies/wildcard", {
+    return fetch(`${API_BASE_URL}/movies/wildcard`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({
@@ -95,7 +98,7 @@ export function getMoviesWildcardSearch(searchString, searchString2, searchType)
 }
 
 export function getMoviesQuerySearch(searchString) {
-    return fetch("http://localhost:5100/movies/querySearch", {
+    return fetch(`${API_BASE_URL}/movies/querySearch`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({ searchString: searchString }),
@@ -115,7 +118,7 @@ export function getMoviesQuerySearch(searchString) {
 }
 
 export function getLikedMovies() {
-    return fetch("http://localhost:5100/movies/like", {
+    return fetch(`${API_BASE_URL}/movies/like`, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -131,7 +134,7 @@ export function getLikedMovies() {
 }
 
 export function getMovieDetails(movieViewModel) {
-    return fetch("http://localhost:5100/movies/details", {
+    return fetch(`${API_BASE_URL}/movies/details`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({
@@ -160,7 +163,7 @@ export function getMovieDetails(movieViewModel) {
 }
 
 export function likeMovie(searchString) {
-    return fetch("http://localhost:5100/movies/like/" + searchString, {
+    return fetch(`${API_BASE_URL}/movies/like/` + searchString, {
         method: "PUT",
         mode: "cors"
     }).then(resp => {
@@ -176,7 +179,7 @@ export function likeMovie(searchString) {
 }
 
 export function scanAndAddNewMovies(days) {
-    return fetch("http://localhost:5100/movies/addnew/" + days, {
+    return fetch(`${API_BASE_URL}/movies/addnew/` + days, {
         method: "PUT",
         mode: "cors",
     }).then(resp => {
@@ -192,7 +195,7 @@ export function scanAndAddNewMovies(days) {
 }
 
 export function deleteMovies() {
-    return fetch("http://localhost:5100/movies/delete/", {
+    return fetch(`${API_BASE_URL}/movies/delete/`, {
         method: "DELETE",
         mode: "cors",
     }).then(resp => {
@@ -209,7 +212,7 @@ export function deleteMovies() {
 
 
 export function getAllActorNames() {
-    return fetch("http://localhost:5100/actors/names", {
+    return fetch(`${API_BASE_URL}/actors/names`, {
         method: "GET",
         mode: "cors",
     }).then(resp => {
@@ -225,7 +228,7 @@ export function getAllActorNames() {
 }
 
 export function getActorsByRanges(heightLower, heightUpper, cupLower, cupUpper, age) {
-    return fetch("http://localhost:5100/actors/ranges", {
+    return fetch(`${API_BASE_URL}/actors/ranges`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({
@@ -251,7 +254,7 @@ export function getActorsByRanges(heightLower, heightUpper, cupLower, cupUpper, 
 }
 
 export function getActorByName(searchString) {
-    return fetch("http://localhost:5100/actors/" + searchString, {
+    return fetch(`${API_BASE_URL}/actors/` + searchString, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -267,7 +270,7 @@ export function getActorByName(searchString) {
 }
 
 export function getActorByNames(names) {
-    return fetch("http://localhost:5100/actors/getbynames", {
+    return fetch(`${API_BASE_URL}/actors/getbynames`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify(names),
@@ -287,7 +290,7 @@ export function getActorByNames(names) {
 }
 
 export function getLikedActors() {
-    return fetch("http://localhost:5100/actors/like", {
+    return fetch(`${API_BASE_URL}/actors/like`, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -303,7 +306,7 @@ export function getLikedActors() {
 }
 
 export function getLocalActors() {
-    return fetch("http://localhost:5100/actors/local", {
+    return fetch(`${API_BASE_URL}/actors/local`, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -319,7 +322,7 @@ export function getLocalActors() {
 }
 
 export function likeActor(searchString) {
-    return fetch("http://localhost:5100/actors/like/" + searchString, {
+    return fetch(`${API_BASE_URL}/actors/like/` + searchString, {
         method: "PUT",
         mode: "cors"
     }).then(resp => {
@@ -335,7 +338,7 @@ export function likeActor(searchString) {
 }
 
 export function getAllGenres() {
-    return fetch("http://localhost:5100/genres", {
+    return fetch(`${API_BASE_URL}/genres`, {
         method: "GET",
         mode: "cors",
     }).then(resp => {
@@ -351,7 +354,7 @@ export function getAllGenres() {
 }
 
 export function getGenreByName(searchString) {
-    return fetch("http://localhost:5100/genres/" + searchString, {
+    return fetch(`${API_BASE_URL}/genres/` + searchString, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -367,7 +370,7 @@ export function getGenreByName(searchString) {
 }
 
 export function getAllGenreNames() {
-    return fetch("http://localhost:5100/genres/names", {
+    return fetch(`${API_BASE_URL}/genres/names`, {
         method: "GET",
         mode: "cors",
     }).then(resp => {
@@ -383,7 +386,7 @@ export function getAllGenreNames() {
 }
 
 export function getLikedGenres() {
-    return fetch("http://localhost:5100/genres/like", {
+    return fetch(`${API_BASE_URL}/genres/like`, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -399,7 +402,7 @@ export function getLikedGenres() {
 }
 
 export function likeGenre(searchString) {
-    return fetch("http://localhost:5100/genres/like/" + searchString, {
+    return fetch(`${API_BASE_URL}/genres/like/` + searchString, {
         method: "PUT",
         mode: "cors"
     }).then(resp => {
@@ -415,7 +418,7 @@ export function likeGenre(searchString) {
 }
 
 export function getAllTags() {
-    return fetch("http://localhost:5100/tags", {
+    return fetch(`${API_BASE_URL}/tags`, {
         method: "GET",
         mode: "cors",
     }).then(resp => {
@@ -431,7 +434,7 @@ export function getAllTags() {
 }
 
 export function getTagByName(searchString) {
-    return fetch("http://localhost:5100/tags/" + searchString, {
+    return fetch(`${API_BASE_URL}/tags/` + searchString, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -447,7 +450,7 @@ export function getTagByName(searchString) {
 }
 
 export function getAllTagNames() {
-    return fetch("http://localhost:5100/tags/names", {
+    return fetch(`${API_BASE_URL}/tags/names`, {
         method: "GET",
         mode: "cors",
     }).then(resp => {
@@ -463,7 +466,7 @@ export function getAllTagNames() {
 }
 
 export function getLikedTags() {
-    return fetch("http://localhost:5100/tags/like", {
+    return fetch(`${API_BASE_URL}/tags/like`, {
         method: "GET",
         mode: "cors"
     }).then(resp => {
@@ -479,7 +482,7 @@ export function getLikedTags() {
 }
 
 export function likeTag(searchString) {
-    return fetch("http://localhost:5100/tags/like/" + searchString, {
+    return fetch(`${API_BASE_URL}/tags/like/` + searchString, {
         method: "PUT",
         mode: "cors"
     }).then(resp => {
@@ -495,7 +498,7 @@ export function likeTag(searchString) {
 }
 
 export function getAllDirectorNames() {
-    return fetch("http://localhost:5100/directors/names", {
+    return fetch(`${API_BASE_URL}/directors/names`, {
         method: "GET",
         mode: "cors",
     }).then(resp => {
@@ -511,7 +514,7 @@ export function getAllDirectorNames() {
 }
 
 export function getAllStudioNames() {
-    return fetch("http://localhost:5100/studio/names", {
+    return fetch(`${API_BASE_URL}/studio/names`, {
         method: "GET",
         mode: "cors",
     }).then(resp => {
@@ -527,7 +530,7 @@ export function getAllStudioNames() {
 }
 
 export function createPotPlayerPlayList(movies, playListName) {
-    return fetch("http://localhost:5100/playlist/create/" + playListName, {
+    return fetch(`${API_BASE_URL}/playlist/create/` + playListName, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify(movies),
@@ -546,7 +549,7 @@ export function createPotPlayerPlayList(movies, playListName) {
 }
 
 export function createPotPlayerPlayListByActors(actors, playListName) {
-    return fetch("http://localhost:5100/playlist/createbyactors/" + playListName, {
+    return fetch(`${API_BASE_URL}/playlist/createbyactors/` + playListName, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify(actors),
@@ -565,7 +568,7 @@ export function createPotPlayerPlayListByActors(actors, playListName) {
 }
 
 export function addToDefaultPotPlayerPlayList(movies) {
-    return fetch("http://localhost:5100/playlist/append/default", {
+    return fetch(`${API_BASE_URL}/playlist/append/default`, {
         method: "PUT",
         mode: "cors",
         body: JSON.stringify(movies),
@@ -584,7 +587,7 @@ export function addToDefaultPotPlayerPlayList(movies) {
 }
 
 export function getUserSettings() {
-    return fetch("http://localhost:5100/usersettings", {
+    return fetch(`${API_BASE_URL}/usersettings`, {
         method: "GET",
         mode: "cors",
     }).then(resp => {
@@ -600,7 +603,7 @@ export function getUserSettings() {
 }
 
 export function updateUserSettings(userSettings) {
-    return fetch("http://localhost:5100/usersettings/update", {
+    return fetch(`${API_BASE_URL}/usersettings/update`, {
         method: "PUT",
         mode: "cors",
         body: JSON.stringify(userSettings),
@@ -619,7 +622,8 @@ export function updateUserSettings(userSettings) {
 }
 
 export function getImage(imageType, id) {
-    return fetch("http://localhost:5100/images/getimage", {
+    // Image API returns binary JPEG data; convert to an object URL for <img> tags.
+    return fetch(`${API_BASE_URL}/images/getimage`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({

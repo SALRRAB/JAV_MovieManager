@@ -1,19 +1,21 @@
 import "./TagViewer.css"
+import "./GridViewer.css"
 import { useState, forwardRef, useImperativeHandle, useRef } from "react";
 import { Pagination, Button, Spin, Modal, Descriptions, Input } from 'antd';
 import { HeartFilled, HeartOutlined } from '@ant-design/icons';
 import { getMoivesByFilter, getTagByName, likeTag } from "../services/DataService";
 import MovieViewer from "./MovieViewer";
-import { MOVIE_CARD_EACH_PAGE_SMALL_SCREEN } from "../Constant";
+import { NAME_TAG_CELL_WIDTH, NAME_TAG_CELL_HEIGHT, MIN_GRID_ITEMS_PER_PAGE } from "../Constant";
+import { useGridItemsPerPage } from "../hooks/useGridItemsPerPage";
+import { useGridPagination } from "../hooks/useGridPagination";
 
 const { Search } = Input;
 
 const TagViewer = forwardRef((props, ref) => {
-    const numEachPage = 63;
-
-    const [minValue, setMinValue] = useState(0);
-    const [maxValue, setMaxValue] = useState(numEachPage);
+    const listRef = useRef(null);
+    const numEachPage = useGridItemsPerPage(listRef, NAME_TAG_CELL_WIDTH, NAME_TAG_CELL_HEIGHT, MIN_GRID_ITEMS_PER_PAGE);
     const [tags, setTags] = useState([]);
+    const { currentPage, minValue, maxValue, handlePageChange } = useGridPagination(tags, numEachPage);
     const [tag, setTag] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [visible, setVisible] = useState(false);
@@ -32,16 +34,9 @@ const TagViewer = forwardRef((props, ref) => {
     }));
 
     function init(tags) {
-        setMinValue(0);
-        setMaxValue(numEachPage);
         setTags(tags);
         setIsLoading(false);
     }
-
-    function handleChange(value) {
-        setMinValue((value - 1) * numEachPage);
-        setMaxValue(value * numEachPage);
-    };
 
     function showTagDetails(tagIndex) {
         getTagByName(tags[tagIndex]).then(resp => {
@@ -50,7 +45,7 @@ const TagViewer = forwardRef((props, ref) => {
             movieViewer?.current.setIsLoading();
             setLikeFlag(resp[0].liked);
             getMoivesByFilter(1, [tags[tagIndex]], false).then(resp => {
-                movieViewer?.current.initializeMovies(resp, MOVIE_CARD_EACH_PAGE_SMALL_SCREEN, tags[tagIndex]);
+                movieViewer?.current.initializeMovies(resp, tags[tagIndex]);
             });
         }).catch((error) => {
             console.log(error);
@@ -74,26 +69,26 @@ const TagViewer = forwardRef((props, ref) => {
     }
 
     return (
-        <div className="tag-viewer">
-            {isLoading ? <div><Spin size="large" /></div> :
+        <div className="grid-viewer tag-viewer">
+            <div className="grid-viewer-toolbar">
                 <Pagination
                     simple
-                    defaultCurrent={1}
-                    defaultPageSize={numEachPage} //default size of page
-                    onChange={handleChange}
+                    current={currentPage}
+                    pageSize={numEachPage}
+                    onChange={handlePageChange}
                     total={tags?.length}
                     className="header-left"
-                />}
-            <Search placeholder="类型名" onSearch={onSearch} className="header-right tag-search-bar" loading={isLoading} />
-            {isLoading ? <div><Spin size="large" /></div> :
-                <div>
-                    <div className="tag-list">
-                        {tags?.slice(minValue, maxValue).map((tag, i) =>
-                            <Button key={"tag-" + i + minValue} className="tag-button" onClick={() => showTagDetails(i + minValue)}>
-                                <span className="tag-span">{tag}</span>
-                            </Button>)}
-                    </div>
-                </div>}
+                    disabled={isLoading}
+                />
+                <Search placeholder="类型名" onSearch={onSearch} className="header-right tag-search-bar" loading={isLoading} />
+            </div>
+            <div className="grid-viewer-list tag-list" ref={listRef}>
+                {isLoading ? <div className="grid-viewer-loading"><Spin size="large" /></div> :
+                    tags?.slice(minValue, maxValue).map((tag, i) =>
+                        <Button key={"tag-" + i + minValue} className="tag-button" onClick={() => showTagDetails(i + minValue)}>
+                            <span className="tag-span">{tag}</span>
+                        </Button>)}
+            </div>
             <Modal
                 title={[<Button key="tag-like-btn"
                     shape="circle"

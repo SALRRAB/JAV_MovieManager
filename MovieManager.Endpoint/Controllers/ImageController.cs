@@ -11,12 +11,16 @@ namespace MovieManager.Endpoint.Controllers
         private string notFoundMessage = "No Image found!";
         private MovieService _movieService;
         private ActorService _actorService;
+        private ImageCacheService _imageCacheService;
 
-        public ImageController(MovieService movieService
-            , ActorService actorService)
+        public ImageController(
+            MovieService movieService,
+            ActorService actorService,
+            ImageCacheService imageCacheService)
         {
             _movieService = movieService;
             _actorService = actorService;
+            _imageCacheService = imageCacheService;
         }
 
         [HttpPost] 
@@ -36,7 +40,15 @@ namespace MovieManager.Endpoint.Controllers
             {
                 return NotFound(notFoundMessage);
             }
-            var image = System.IO.File.OpenRead(path);
+
+            // Serve from local cache to avoid repeated reads from library/network paths.
+            var cachedPath = _imageCacheService.GetCachedImagePath(imageRequest, path);
+            if (string.IsNullOrEmpty(cachedPath) || !System.IO.File.Exists(cachedPath))
+            {
+                return NotFound(notFoundMessage);
+            }
+
+            var image = System.IO.File.OpenRead(cachedPath);
             return File(image, "image/jpeg");
         }
     }

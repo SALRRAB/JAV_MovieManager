@@ -12,7 +12,6 @@ import GenreViewer from './components/GenreViewer';
 import TagViewer from './components/TagViewer';
 import DirectorViewer from './components/DirectorViewer.jsx';
 import StudioViewer from './components/StudioViewer.jsx';
-import { MOVIE_CARD_EACH_PAGE_LARGE_SCREEN } from './Constant.js';
 
 const { SubMenu } = Menu;
 const { Content, Sider } = Layout;
@@ -260,7 +259,7 @@ function App() {
         movieViewer?.current.initializeMovies(resp);
       });
     } else {
-      movieViewer?.current.initializeMovies(mostRecentMovies, MOVIE_CARD_EACH_PAGE_LARGE_SCREEN);
+      movieViewer?.current.initializeMovies(mostRecentMovies);
     }
   }
 
@@ -269,7 +268,7 @@ function App() {
     setSelectedGenres([]);
     setSelectedTags([]);
     setSelectedYears([]);
-    movieViewer?.current?.initializeMovies(mostRecentMovies, MOVIE_CARD_EACH_PAGE_LARGE_SCREEN);
+    movieViewer?.current?.initializeMovies(mostRecentMovies);
   }
 
   function onMenuOptionClicked(e) {
@@ -277,7 +276,7 @@ function App() {
     resetActorFilter();
     setTimeout(() => {
       if (e.key[0] === '1') {
-        movieViewer?.current.initializeMovies(mostRecentMovies, MOVIE_CARD_EACH_PAGE_LARGE_SCREEN);
+        movieViewer?.current.initializeMovies(mostRecentMovies);
       } else if (e.key[0] === '2') {
         actorViewer?.current.initializeActors(allActors.map(x => x.value));
       } else if (e.key[0] === '3') {
@@ -297,10 +296,10 @@ function App() {
     if(e.target.checked) {
       getLikedMovies().then(resp => {
         let result = resp ? resp : [];
-        movieViewer?.current.initializeMovies(result, MOVIE_CARD_EACH_PAGE_LARGE_SCREEN);
+        movieViewer?.current.initializeMovies(result);
       });
     } else {
-      movieViewer?.current.initializeMovies(mostRecentMovies, MOVIE_CARD_EACH_PAGE_LARGE_SCREEN);
+      movieViewer?.current.initializeMovies(mostRecentMovies);
     }
   }
 

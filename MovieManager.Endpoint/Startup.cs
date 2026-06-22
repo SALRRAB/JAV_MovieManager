@@ -33,6 +33,9 @@ namespace MovieManager.Endpoint
             services.AddTransient<DirectorService>();
             services.AddTransient<StudioService>();
             services.AddSingleton<UserSettingsService>();
+            // Image services are singletons so cache and actor index persist across requests.
+            services.AddSingleton<ImageCacheService>();
+            services.AddSingleton<ActorImageIndexService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
